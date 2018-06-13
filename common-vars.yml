@@ -1,0 +1,17 @@
+registry_domain: registry-prod.example.com
+registry_write_domain: registry-prod-write.example.com
+
+registry_cert: |
+  -----BEGIN CERTIFICATE-----
+  ... a whole bunch of stuff ...
+  -----END CERTIFICATE-----
+
+internal_http_proxy_host: proxy.example.com
+internal_http_proxy_port: 3128
+
+internal_https_proxy_host: proxy.example.com
+internal_https_proxy_port: 3128
+
+slack_channel: '#builds'
+slack_username: Concourse
+slack_icon: https://avatars3.githubusercontent.com/u/7809479

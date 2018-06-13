@@ -1,0 +1,13 @@
+plan_branch: stage
+repo_branch: master
+config_branch: our-web-stage
+tag_filter: RC-*
+
+image_naming_type: epoch-appended
+image_tag_base: stage
+swarm_endpoint: swarm-stage.example.com
+swarm_service_name: our-web
+ui_url: https://ui-stage.example.com
+
+skip_invalidation: true
+cf_id: AAAAAAAAAAAAAA

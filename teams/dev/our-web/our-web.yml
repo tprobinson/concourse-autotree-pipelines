@@ -1,0 +1,221 @@
+# A list of variables that are repeated throughout the document
+# using YAML anchors (like *var_name)
+vars:
+  https_tunnel: &https_tunnel
+    proxy_host: ((internal_https_proxy_host))
+    proxy_port: ((internal_https_proxy_port))
+  internal_registry: &internal_registry
+    username: ((registry_username))
+    password: ((registry_password))
+    ca_certs:
+    - cert: ((registry_cert))
+      domain: ((registry_domain))
+  internal_registry_write: &internal_registry_write
+    <<: *internal_registry
+    ca_certs:
+    - cert: ((registry_cert))
+      domain: ((registry_write_domain))
+  slack_params: &slack_params
+    channel: ((slack_channel))
+    username: ((slack_username))
+    icon_url: ((slack_icon))
+    text_file: git-ref/message
+
+resource_types:
+- name: swarm-service
+  type: docker-image
+  source:
+    <<: *internal_registry
+    repository: ((registry_domain))/concourse/swarm-service
+
+resources:
+- name: slack
+  type: slack-notification
+  source:
+    url: ((slack_webhook_url))
+    proxy: http://((internal_http_proxy_host)):((internal_http_proxy_port))
+    proxy_https_tunnel: true
+
+- name: plan
+  type: git
+  source:
+    uri: git@example.com:our/docker-our-web.git
+    branch: ((plan_branch))
+    private_key: ((plan_private_key))
+    https_tunnel: *https_tunnel
+
+- name: repo
+  type: git
+  source:
+    uri: git@example.com:our/our-web.git
+    branch: ((repo_branch))
+    tag_filter: ((tag_filter))
+    private_key: ((repo_private_key))
+    https_tunnel: *https_tunnel
+
+- name: config
+  type: git
+  source:
+    uri: git@example.com:our/our-environment.git
+    branch: ((config_branch))
+    private_key: ((config_private_key))
+    https_tunnel: *https_tunnel
+
+- name: registry-write
+  type: docker-image
+  source:
+    <<: *internal_registry_write
+    repository: ((registry_write_domain))/our/((swarm_service_name))
+
+- name: swarm
+  type: swarm-service
+  source:
+    host: ((swarm_endpoint))
+    port: 2375
+    api_version: v1.33
+    service: ((swarm_service_name))
+
+jobs:
+- name: ((swarm_service_name))
+  plan:
+  - aggregate:
+    - get: plan
+    - get: repo
+      trigger: true
+    - get: config
+
+  - task: get-git-ref
+    config:
+      platform: linux
+      inputs: [{name: repo}]
+      outputs: [{name: git-ref}]
+      image_resource:
+        type: docker-image
+        source:
+          <<: *internal_registry
+          repository: ((registry_domain))/our/alpine
+      params:
+        IMAGE_NAMING_TYPE: ((image_naming_type))
+        IMAGE_TAG_BASE: ((image_tag_base))
+      run: { path: get-git-ref }
+
+  - aggregate:
+    - put: slack
+      params:
+        <<: *slack_params
+        text: |-
+          Building $TEXT_FILE_CONTENT:
+          *Status:* :discopickle: Building!
+          <https://concourse-prod.example.com/builds/$BUILD_ID|Open $BUILD_PIPELINE_NAME pipeline>
+    - task: compile
+      config:
+        platform: linux
+        inputs:
+        - name: plan
+        - name: repo
+        - name: config
+        outputs:
+        - name: static-files
+        caches:
+        - path: repo/node_modules
+        image_resource:
+          type: docker-image
+          source:
+            repository: node
+            tag: 8.8.1-alpine
+        run:
+          dir: repo
+          path: /bin/sh
+          args:
+            - -c
+            - |
+              set -e -u
+              cp ../config/* .
+
+              yarn install --non-interactive --no-progress
+              yarn run build
+
+              mv build ../static-files/
+              cp ../plan/* ../static-files/
+      on_failure:
+        put: slack
+        params:
+          <<: *slack_params
+          text: |-
+            Building $TEXT_FILE_CONTENT:
+            *Status:* :parrot_dad: Failed during static file compilation!
+            <https://concourse-prod.example.com/builds/$BUILD_ID|Open $BUILD_PIPELINE_NAME pipeline>
+
+  - put: registry-write
+    params:
+      build: static-files
+      build_args:
+        http_proxy: http://((internal_http_proxy_host)):((internal_http_proxy_port))
+        https_proxy: http://((internal_https_proxy_host)):((internal_https_proxy_port))
+      tag: git-ref/ref
+    on_failure:
+      put: slack
+      params:
+        <<: *slack_params
+        text: |-
+          Building $TEXT_FILE_CONTENT:
+          *Status:* :screamingniccage: Failed during push to the registry!
+          <https://concourse-prod.example.com/builds/$BUILD_ID|Open $BUILD_PIPELINE_NAME pipeline>
+
+  - put: swarm
+    params:
+      image: ((registry_domain))/our/((swarm_service_name))
+      magic_port_flip_workaround: 65535
+      tag: git-ref/ref
+    on_failure:
+      put: slack
+      params:
+        <<: *slack_params
+        text: |-
+          Building $TEXT_FILE_CONTENT:
+          *Status:* :notthebees: Failed during push to the Swarm!
+          <https://concourse-prod.example.com/builds/$BUILD_ID|Open $BUILD_PIPELINE_NAME pipeline>
+
+  - task: invalidate
+    config:
+      platform: linux
+      params:
+        aws_access_key: ((aws_access_key))
+        aws_secret_key: ((aws_secret_key))
+        aws_region: us-west-2
+        cf_id: ((cf_id))
+        skip_invalidation: ((skip_invalidation))
+        http_proxy: http://((internal_http_proxy_host)):((internal_http_proxy_port))
+        https_proxy: http://((internal_http_proxy_host)):((internal_http_proxy_port))
+      image_resource:
+        type: docker-image
+        source:
+          <<: *internal_registry
+          repository: ((registry_domain))/our/aws
+          tag: latest
+      run:
+        path: /entrypoint.sh
+        args:
+          - /bin/sh
+          - -c
+          - |
+            if [ "$skip_invalidation" == "true" ]; then exit 0; fi
+            aws cloudfront create-invalidation \
+              --distribution-id $cf_id \
+              --paths ''/*'
+    on_failure:
+      put: slack
+      params:
+        <<: *slack_params
+        text: |-
+          Building $TEXT_FILE_CONTENT:
+          *Status:* :trynottocry: Failed during CloudFront cache invalidation!
+          <https://concourse-prod.example.com/builds/$BUILD_ID|Open $BUILD_PIPELINE_NAME pipeline>
+    on_success:
+      put: slack
+      params:
+        <<: *slack_params
+        text: |-
+          Building $TEXT_FILE_CONTENT:
+          *Status:* :shipitparrot: Finished!
+          *Result:* → ((ui_url))

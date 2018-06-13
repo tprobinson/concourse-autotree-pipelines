@@ -1,0 +1,64 @@
+# A list of variables that are repeated throughout the document
+# using YAML anchors (like *var_name)
+vars:
+  https_tunnel: &https_tunnel
+    proxy_host: ((internal_https_proxy_host))
+    proxy_port: ((internal_https_proxy_port))
+  internal_registry: &internal_registry
+    username: ((registry_username))
+    password: ((registry_password))
+    ca_certs:
+    - cert: ((registry_cert))
+      domain: ((registry_domain))
+
+resources:
+- name: time
+  type: time
+  source:
+    location: America/Los_Angeles
+    start: 8:00
+    stop: 9:00
+    days: [Monday]
+
+- name: repo
+  type: git
+  source:
+    uri: git@example.com:our/importantReportTools.git
+    branch: master
+    private_key: ((repo_private_key))
+    https_tunnel: *https_tunnel
+
+jobs:
+- name: build
+  public: true
+  plan:
+  - aggregate:
+    - get: repo
+    - get: time
+      trigger: true
+
+  - task: run
+    config:
+      platform: linux
+      inputs:
+      - name: time
+      - name: repo
+      image_resource:
+        type: docker-image
+        source:
+          <<: *internal_registry
+          repository: ((registry_domain))/our/alpine
+      run:
+        dir: /repo
+        path: /bin/sh
+        args:
+          - -c
+          - |
+            set -e -u
+            curl -v -X POST \
+              -d '{"message": "wow its json"}' \
+              https://such-and-such.example.com/webhook/doSomeThings
+            curl -v \
+              -F 'file=@someImportantReport.csv' \
+              https://such-and-such.example.com/webhook/doSomeOtherThings
+            echo "Done!"

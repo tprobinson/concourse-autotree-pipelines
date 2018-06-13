@@ -1,0 +1,27 @@
+resources:
+- name: repo
+  type: git
+  source:
+    uri: git@example.com:our/docker-automation-containers.git
+    branch: master
+    private_key: ((repo_private_key))
+
+- name: registry-write
+  type: docker-image
+  source:
+    username: ((registry_username))
+    password: ((registry_password))
+    repository: ((registry_write_domain))/our/alpine
+
+# This pipeline builds us a container that we use in other pipelines.
+# and includes handy scripts!
+jobs:
+- name: build
+  plan:
+  - aggregate:
+    - get: repo
+      trigger: true
+  - put: registry-write
+    params:
+      build: repo/alpine
+      tag_as_latest: true

@@ -1,0 +1,13 @@
+plan_branch: master
+repo_branch: master
+config_branch: our-web-prod
+tag_filter: release-*
+
+image_naming_type: epoch-appended
+image_tag_base: prod
+swarm_endpoint: swarm-prod.example.com
+swarm_service_name: our-web
+ui_url: https://ui-prod.example.com
+
+skip_invalidation: false
+cf_id: AAAAAAAAAAAAAA
