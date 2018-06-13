@@ -4,6 +4,22 @@ This repository is an scaffold for laying out Concourse Pipelines.
 
 The layout and included script are intended to make automating based on the Concourse pipelines easy.
 
+<!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
+
+- [Concourse Autotree pattern](#Concourse-Autotree-pattern)   
+- [Getting started](#Getting-started)   
+   - [Pipeline Structure](#Pipeline-Structure)   
+      - [Standalone Pipelines](#Standalone-Pipelines)   
+      - [Variant Pipelines](#Variant-Pipelines)   
+      - [Disabling a Pipeline](#Disabling-a-Pipeline)   
+   - [Using the `update-all` script](#Using-the-update-all-script)   
+      - [Prerequisites](#Prerequisites)   
+      - [Running the Script](#Running-the-Script)   
+- [Other automation that uses this pattern](#Other-automation-that-uses-this-pattern)   
+- [Known Issues / TODO](#Known-Issues-TODO)   
+
+<!-- /MDTOC -->
+
 # Getting started
 
 The `teams` folder has sub-folders named according to each team. Below that, each pipeline has its own folder. In each folder, a YAML file named like `<pipeline name>.yml` is used as the base for that pipeline.
