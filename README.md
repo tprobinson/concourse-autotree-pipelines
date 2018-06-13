@@ -107,8 +107,8 @@ random-task: done
 Logging in to team dev: done
 our-web:
   our-web-prod
-	our-web-stage
-	our-web-test
+  our-web-stage
+  our-web-test
 Done!
 ```
 
