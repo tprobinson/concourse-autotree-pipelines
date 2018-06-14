@@ -6,17 +6,17 @@ The layout and included script are intended to make automating based on the Conc
 
 <!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
 
-- [Concourse Autotree pattern](#Concourse-Autotree-pattern)   
-- [Getting started](#Getting-started)   
-   - [Pipeline Structure](#Pipeline-Structure)   
-      - [Standalone Pipelines](#Standalone-Pipelines)   
-      - [Variant Pipelines](#Variant-Pipelines)   
-      - [Disabling a Pipeline](#Disabling-a-Pipeline)   
-   - [Using the `update-all` script](#Using-the-update-all-script)   
-      - [Prerequisites](#Prerequisites)   
-      - [Running the Script](#Running-the-Script)   
-- [Other automation that uses this pattern](#Other-automation-that-uses-this-pattern)   
-- [Known Issues / TODO](#Known-Issues-TODO)   
+- [Concourse Autotree pattern](#Concourse-Autotree-pattern)
+- [Getting started](#Getting-started)
+   - [Pipeline Structure](#Pipeline-Structure)
+      - [Standalone Pipelines](#Standalone-Pipelines)
+      - [Variant Pipelines](#Variant-Pipelines)
+      - [Disabling a Pipeline](#Disabling-a-Pipeline)
+   - [Using the `update-all` script](#Using-the-update-all-script)
+      - [Prerequisites](#Prerequisites)
+      - [Running the Script](#Running-the-Script)
+- [Other automation that uses this pattern](#Other-automation-that-uses-this-pattern)
+- [Known Issues / TODO](#Known-Issues-TODO)
 
 <!-- /MDTOC -->
 
@@ -114,7 +114,9 @@ Done!
 
 # Other automation that uses this pattern
 
-*Coming soon*
+[concourse-autotree-hooks](https://github.com/tprobinson/concourse-autotree-hooks) - manage webhooks in source control automatically using Terraform
+
+*More coming soon*
 
 You could make a pipeline triggered on a webhook from your autotree repository that runs update-all, if you want it to be totally automatic.
 
