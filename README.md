@@ -1,6 +1,6 @@
 # Concourse Autotree pattern
 
-This repository is an scaffold for laying out Concourse Pipelines.
+This repository is a scaffold for laying out Concourse Pipelines.
 
 The layout and included script are intended to make automating based on the Concourse pipelines easy.
 
@@ -123,3 +123,4 @@ You could make a pipeline triggered on a webhook from your autotree repository t
 # Known Issues / TODO
 
 Only the .yml extension is recognized currently. If possible, .yaml should be supported as well.
+The update-all script currently does not delete pipelines that exist in Concourse but not in this repo. This will be added in a future version.
