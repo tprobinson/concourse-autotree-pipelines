@@ -1,24 +1,25 @@
 # Concourse Autotree pattern
 
+Version *0.9.0*
+
 This repository is a scaffold for laying out Concourse Pipelines.
 
 The layout and included script are intended to make automating based on the Concourse pipelines easy.
 
-<!-- MDTOC maxdepth:6 firsth1:1 numbering:0 flatten:0 bullets:1 updateOnSave:1 -->
-
-- [Concourse Autotree pattern](#Concourse-Autotree-pattern)
-- [Getting started](#Getting-started)
-   - [Pipeline Structure](#Pipeline-Structure)
-      - [Standalone Pipelines](#Standalone-Pipelines)
-      - [Variant Pipelines](#Variant-Pipelines)
-      - [Disabling a Pipeline](#Disabling-a-Pipeline)
-   - [Using the `update-all` script](#Using-the-update-all-script)
-      - [Prerequisites](#Prerequisites)
-      - [Running the Script](#Running-the-Script)
-- [Other automation that uses this pattern](#Other-automation-that-uses-this-pattern)
-- [Known Issues / TODO](#Known-Issues-TODO)
-
-<!-- /MDTOC -->
+<!-- TOC START min:1 max:3 link:true asterisk:false update:true -->
+- [Concourse Autotree pattern](#concourse-autotree-pattern)
+- [Getting started](#getting-started)
+  - [Pipeline Structure](#pipeline-structure)
+    - [Standalone Pipelines](#standalone-pipelines)
+    - [Variant Pipelines](#variant-pipelines)
+    - [Disabling a Pipeline](#disabling-a-pipeline)
+  - [Using the `update-all` script](#using-the-update-all-script)
+    - [Prerequisites](#prerequisites)
+    - [Running the Script](#running-the-script)
+- [Other automation that uses this pattern](#other-automation-that-uses-this-pattern)
+- [Changelog](#changelog)
+- [Known Issues / TODO](#known-issues--todo)
+<!-- TOC END -->
 
 # Getting started
 
@@ -97,6 +98,8 @@ This file is also ignored in Git, so you don't commit credentials into source co
 
 **Warning:** The script does not ask you if you want to commit any changes, it just assumes 'yes' to everything. Good for those who want the repository to be treated as a declarative state for Concourse.
 
+If you want to see what the script *would* do, add the `-n` flag to do a dry run.
+
 ```sh
 # git fetch; and git reset --hard origin/master; and fish update-all.fish
 Logging in to team admin: done
@@ -120,7 +123,15 @@ Done!
 
 You could make a pipeline triggered on a webhook from your autotree repository that runs update-all, if you want it to be totally automatic.
 
+# Changelog
+
+###### *0.9.0*
+
+Fish script now deletes pipelines that don't exist in the repository.
+Added `-n` flag for a dry-run.
+Added examples of credentials files in the repository.
+Bash script not updated yet
+
 # Known Issues / TODO
 
 Only the .yml extension is recognized currently. If possible, .yaml should be supported as well.
-The update-all script currently does not delete pipelines that exist in Concourse but not in this repo. This will be added in a future version.

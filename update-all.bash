@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e -u
 common_configs='-l common-vars.yml -l credentials.yml'
-concourse_url='https://concourse-prod.example.com'
 
 team_color="$(tput setaf 5)"
 job_color="$(tput setaf 6)"
